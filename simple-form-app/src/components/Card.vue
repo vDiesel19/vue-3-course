@@ -1,18 +1,47 @@
 <script setup>
-import { ref } from 'vue'
-const count = ref(0)
+import { ref, onMounted } from 'vue';
+const pokemons = ref([]);
+const api = 'https://pokeapi.co/api/v2/pokemon';
+const ids = [1, 4, 7];
+
+const fetchData = async () => {
+  try {
+    const responses = await Promise.all(
+      ids.map(id => fetch(`${api}/${id}`))
+    );
+    const data = await Promise.all(
+      responses.map(res => res.json())
+    );
+    pokemons.value = data.map(item => {
+      return {
+        id: item.id,
+        name: item.name,
+        sprite: item.sprites.other['official-artwork'].front_default,
+        types: item.types.map(types => types.type.name)
+      }
+    });
+  } catch (error) {
+    console.error(`fetch error: ${error.message}`)
+  }
+}
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <template>
-  <div class="card">
+  <div class="card" v-for="p in pokemons" :key="p.id">
     <div class="title">
-      title
+      {{ p.name }}
     </div>
     <div class="content">
       content
     </div>
     <div class="description">
-      description
+      <div v-for="type in p.types" :key="type">
+
+      </div>
     </div>
   </div>
 </template>
